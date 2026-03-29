@@ -1,0 +1,79 @@
+# ==========================================
+# STEP 1: JAROORI LIBRARIES KO IMPORT KARNA
+# ==========================================
+import pandas as pd # Data handle karne ke liye
+import numpy as np # Calculations ke liye
+from sklearn.model_selection import train_test_split # Data batne ke liye
+from sklearn.preprocessing import StandardScaler # Data ko ek scale par lane ke liye
+from sklearn.linear_model import LogisticRegression # Prediction model
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report # Result check karne ke liye
+
+# ==========================================
+# STEP 2: DATASET KO LOAD AUR EXPLORE KARNA
+# ==========================================
+# Maan lijiye aapki file ka naam 'heart.csv' hai
+df = pd.read_csv('heart.csv') 
+
+print("1. Pehli 5 rows (Data kaisa dikhta hai):")
+print(df.head())
+
+# Features check karna (Age, Cholesterol, BP etc.)
+print("\nData ki information:")
+print(df.info())
+
+
+# ==========================================
+# STEP 3: DATA CLEANING AUR PREPROCESSING
+# ==========================================
+
+# a. Missing values check karna aur handle karna
+# Agar koi khali jagah hai toh use mean se bhar denge
+df = df.fillna(df.mean())
+
+# b. Data Standardizing (Normalize)
+# BP aur Cholesterol ki values badi hoti hain (120, 240) 
+# aur Age choti (40-50). Sabko ek barabar scale par lana zaroori hai.
+scaler = StandardScaler()
+
+# 'target' column ko chhod kar baaki sabko scale karenge
+X = df.drop('target', axis=1) # 'target' ka matlab hai bimari hai ya nahi (0 or 1)
+y = df['target']
+
+X_scaled = scaler.fit_transform(X)
+
+
+# ==========================================
+# STEP 4: DATA KO TRAIN AUR TEST MEIN BATNA
+# ==========================================
+# 80% data model ko sikhane ke liye, 20% test karne ke liye
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+
+# ==========================================
+# STEP 5: CLASSIFICATION MODEL (LOGISTIC REGRESSION)
+# ==========================================
+
+# Model banana
+model = LogisticRegression()
+
+# Model ko sikhana (Training)
+model.fit(X_train, y_train)
+
+# Test data par prediction karna
+y_pred = model.predict(X_test)
+
+
+# ==========================================
+# STEP 6: EVALUATION (RESULT CHECK KARNA)
+# ==========================================
+
+print("\n--- MODEL PERFORMANCE ---")
+print(f"Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
+
+print("\nConfusion Matrix (Kitne sahi, kitne galat):")
+print(confusion_matrix(y_test, y_pred))
+
+# Ismein Precision, Recall aur F1-Score sab mil jayega
+print("\nDetailed Report (Precision, Recall, F1-Score):")
+print(classification_report(y_test, y_pred))
+

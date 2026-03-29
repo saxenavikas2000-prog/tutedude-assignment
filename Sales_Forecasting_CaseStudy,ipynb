@@ -1,0 +1,91 @@
+# ==========================================
+# STEP 1: JAROORI LIBRARIES KO IMPORT KARNA
+# ==========================================
+import pandas as pd # Data handling ke liye
+import numpy as np # Math calculations ke liye
+import matplotlib.pyplot as plt # Graphs banane ke liye
+from sklearn.model_selection import train_test_split # Data batne ke liye
+from sklearn.linear_model import LinearRegression # Prediction model ke liye
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score # Result check karne ke liye
+
+# ==========================================
+# STEP 2: DATASET KO LOAD AUR EXPLORE KARNA
+# ==========================================
+# Maan lijiye aapki file ka naam 'sales_data.csv' hai
+df = pd.read_csv('sales_data.csv') 
+
+print("1. Pehli 5 rows:")
+print(df.head())
+
+# Missing values check karna
+print("\nKhali jagah (Missing values):")
+print(df.isnull().sum())
+
+
+# ==========================================
+# STEP 3: DATA PREPROCESSING (DATE KO THIK KARNA)
+# ==========================================
+
+# a. Date column ko computer ke samajhne layak format mein badalna
+df['Date'] = pd.to_datetime(df['Order Date']) # 'Order Date' aapke dataset ka column name hoga
+
+# b. Date se naye features nikalna (Month, Year, Day)
+# Machine ko '2024-05-20' samajh nahi aata, usey 2024, 5, aur 20 alag chahiye
+df['Year'] = df['Date'].dt.year
+df['Month'] = df['Date'].dt.month
+df['Day'] = df['Date'].dt.day
+
+# c. Missing values ko handle karna (agar hain toh zero se bhar do)
+df = df.fillna(0)
+
+# Sirf kaam ke columns rakhna (Features: Year, Month, Day | Target: Sales)
+# Note: 'Sales' aapke dataset mein column ka naam hona chahiye
+data = df[['Year', 'Month', 'Day', 'Sales']]
+
+print("\nCleaning ke baad data:")
+print(data.head())
+
+
+# ==========================================
+# STEP 4: DATA KO TRAIN AUR TEST MEIN BATNA
+# ==========================================
+
+# X = Features (Year, Month, Day) jinse model sikhega
+# y = Target (Sales) jo predict karni hai
+X = data[['Year', 'Month', 'Day']]
+y = data['Sales']
+
+# 80% data training ke liye aur 20% testing ke liye
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+# ==========================================
+# STEP 5: FORECASTING MODEL (LINEAR REGRESSION)
+# ==========================================
+
+# Model banana
+model = LinearRegression()
+
+# Model ko purana data dikhakar sikhana (Training)
+model.fit(X_train, y_train)
+
+# Test data par prediction karna
+y_pred = model.predict(X_test)
+
+
+# ==========================================
+# STEP 6: EVALUATION (RESULT CHECK KARNA)
+# ==========================================
+
+print("\n--- MODEL PERFORMANCE ---")
+print(f"MAE (Mean Absolute Error): {mean_absolute_error(y_test, y_pred):.2f}")
+print(f"RMSE (Root Mean Squared Error): {np.sqrt(mean_squared_error(y_test, y_pred)):.2f}")
+print(f"R2 Score (Accuracy jaisa): {r2_score(y_test, y_pred):.2f}")
+
+# Ek chota graph sales trend dekhne ke liye
+plt.figure(figsize=(10, 5))
+plt.scatter(y_test, y_pred, color='blue')
+plt.title("Actual Sales vs Predicted Sales")
+plt.xlabel("Actual Sales")
+plt.ylabel("Predicted Sales")
+plt.show()
